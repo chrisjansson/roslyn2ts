@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using CodeGen.Abstract;
 using CodeGen.SimplifiedAst;
 
@@ -8,77 +9,21 @@ namespace CodeGen
 {
     public class TypescriptModuleSerializer
     {
-        public string SerializeModule(AbstractModule module, List<(ClassTypeReference, AbstractModule)> moduleDependencies)
+        public async Task<string> SerializeModule(AbstractModule module, List<(ClassTypeReference, AbstractModule)> moduleDependencies)
         {
-            var imports = SerializeImports(module, moduleDependencies);
-
-            var fragments = module.Fragments
-                .Select(x => SerializeFragment(x))
-                .ToList();
-
-            var joinedFragments = string.Join(Environment.NewLine, fragments);
-
-            return imports + Environment.NewLine + joinedFragments;
+            var f = new RazorLightTemplateEngineFactory();
+            var engine = f.Create("C:\\code\\codegen\\codegen\\");
+            return await engine.CompileRenderAsync("Type.cshtml", new TypescriptModel
+            {
+                CurrentModule = module,
+                Dependencies = moduleDependencies
+            });
         }
 
-        private string SerializeImports(AbstractModule currentModule, List<(ClassTypeReference, AbstractModule)> moduleDependencies)
-        {
-            var imports = moduleDependencies
-                .Select(x => SerializeImport(currentModule, x))
-                .ToList();
-
-            return string.Join(Environment.NewLine, imports);
-        }
-
-        private string SerializeFragment(IAbstractFragment abstractFragment)
-        {
-            var typeFragment = (TypeFragment) abstractFragment;
-            var serializedTypes = typeFragment.Types
-                .Select(x => SerializeType(x))
-                .ToList();
-
-            return string.Join(Environment.NewLine, serializedTypes);
-        }
-
-        private string SerializeType(Class @class)
-        {
-            var properties = @class.Properties
-                .Select(x => Indent(SerializeField(x), 1))
-                .ToList();
-
-            var joinedProperties = string.Join(Environment.NewLine, properties);
-
-            return $@"export interface {@class.Name} {{
-{joinedProperties}
-}}";
-        }
-
-        private string Indent(string line, int times)
-        {
-            var indentation = "    ";
-            var fullIndentation = string.Join(string.Empty, Enumerable.Repeat(indentation, times));
-
-            return fullIndentation + line;
-        }
-
-        private string SerializeField(Property property)
-        {
-            var translator = new TypescriptTypeReferenceTranslator();
-            var tsType = translator.Accept(property.Type);
-            return $"{property.Name}: {tsType};";
-        }
-
-        private string SerializeImport(AbstractModule currentModule, (ClassTypeReference, AbstractModule) dependency)
-        {
-            var fullPath = GetImportPathBetween(currentModule, dependency);
-            var path = string.Join("/", fullPath);
-            return $"import {{ {dependency.Item1.Name} }} from \"./{path}\";";
-        }
-
-        private static IEnumerable<string> GetImportPathBetween(AbstractModule currentModule, (ClassTypeReference, AbstractModule) dependency)
+        public static string GetImportPathBetween(AbstractModule currentModule, AbstractModule module)
         {
             var p0 = currentModule.Path
-                .Zip(dependency.Item2.Path, (l, r) => (l, r))
+                .Zip(module.Path, (l, r) => (l, r))
                 .SkipWhile(((t) => t.Item1 == t.Item2))
                 .ToList();
 
@@ -86,13 +31,15 @@ namespace CodeGen
 
             var backToRoot = Enumerable.Repeat("..", p0.Count);
 
-            var downPath = dependency.Item2.Path
+            var downPath = module.Path
                 .Skip(lengthSame)
                 .ToList();
 
-            return backToRoot
+            var fullPath = backToRoot
                 .Concat(downPath)
-                .Concat(new[] {dependency.Item2.Name});
+                .Concat(new[] {module.Name});
+
+            return string.Join("/", fullPath);
         }
     }
 }

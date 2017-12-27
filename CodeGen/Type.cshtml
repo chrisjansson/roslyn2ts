@@ -1,0 +1,21 @@
+@using CodeGen
+@using CodeGen.Abstract
+@inherits RazorLight.TemplatePage<TypescriptModel>
+@foreach (var dep in Model.Dependencies)
+{
+var path = TypescriptModuleSerializer.GetImportPathBetween(Model.CurrentModule, dep.Item2);
+@:import { @dep.Item1.Name } from "./@path"
+}
+
+@foreach (TypeFragment tf in Model.CurrentModule.Fragments)
+{
+    foreach (var type in tf.Types)
+    {
+@:export interface @type.Name {
+foreach (var property in type.Properties)
+{
+    @:@property.Name: @Model.TranslateType(property.Type);
+}
+@:}
+    }
+}
