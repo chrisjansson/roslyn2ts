@@ -5,5 +5,6 @@
         T Visit(PrimitiveTypeReference primitiveTypeReference);
         T Visit(CollectionTypeReference collectionTypeReference);
         T Visit(ClassTypeReference classTypeReference);
+        T Visit(GenericClassTypeReference genericClassTypeReference);
     }
 }

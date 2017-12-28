@@ -32,6 +32,11 @@ namespace CodeGen
             return classTypeReference.Name;
         }
 
+        public string Visit(GenericClassTypeReference genericClassTypeReference)
+        {
+            throw new NotImplementedException();
+        }
+
         public string Accept(ITypeReference type)
         {
             return type.Visit(this);

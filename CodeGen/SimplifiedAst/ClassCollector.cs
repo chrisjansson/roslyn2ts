@@ -39,6 +39,19 @@ namespace CodeGen.SimplifiedAst
             });
         }
 
+        public class GenericCollector : SymbolVisitor<(bool, ITypeSymbol)>
+        {
+            public override (bool, ITypeSymbol) VisitNamedType(INamedTypeSymbol symbol)
+            {
+                if (!symbol.IsGenericType)
+                {
+                    return (false, null);
+                }
+
+                return (true, symbol.TypeArguments.Single());
+            }
+        }
+
         public class EnumerableCollector : SymbolVisitor<(bool, ITypeSymbol)>
         {
             public override (bool, ITypeSymbol) VisitArrayType(IArrayTypeSymbol symbol)
@@ -79,6 +92,8 @@ namespace CodeGen.SimplifiedAst
                 return false;
             }
         }
+        
+        
 
         public class MemberSymbolCollector : SymbolVisitor
         {
@@ -134,9 +149,17 @@ namespace CodeGen.SimplifiedAst
                 var abc = new EnumerableCollector();
                 var (isIEnumerable, innerType) = abc.Visit(type);
 
+                //todo: handle nested list types, int[][]
                 if (isIEnumerable)
                     return new CollectionTypeReference(ToReturnType(innerType));
 
+                var genericCollector = new GenericCollector();
+                var (isGeneric, genericType) = genericCollector.Visit(type);
+                if (isGeneric)
+                {
+                    return new GenericClassTypeReference(type.Name, type.ContainingNamespace.Name, ToReturnType(genericType));
+                }
+                
                 if (type.IsReferenceType)
                 {
                     return new ClassTypeReference(type.Name, type.ContainingNamespace.Name);

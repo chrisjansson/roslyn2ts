@@ -1,0 +1,11 @@
+@using CodeGen
+@inherits RazorLight.TemplatePage<CodeGen.Abstract.TypeFragment>
+@foreach (var type in Model.Types)
+{
+@:export interface @type.Name {
+foreach (var property in type.Properties)
+{
+    @:@property.Name: @TypescriptModel.TranslateType(property.Type);
+}
+@:}
+}

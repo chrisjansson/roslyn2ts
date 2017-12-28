@@ -20,6 +20,11 @@ namespace CodeGen
             return new List<ClassTypeReference> {classTypeReference};
         }
 
+        public IReadOnlyCollection<ClassTypeReference> Visit(GenericClassTypeReference genericClassTypeReference)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public IReadOnlyCollection<ClassTypeReference> Accept(ITypeReference typeReference)
         {
             return typeReference.Visit(this);

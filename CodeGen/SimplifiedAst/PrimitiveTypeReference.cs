@@ -1,7 +1,6 @@
 ﻿namespace CodeGen.SimplifiedAst
 {
     public class PrimitiveTypeReference : ITypeReference
-
     {
         public PrimitiveTypeReference(PrimitiveKind kind)
 
@@ -21,10 +20,12 @@
     public class ClassTypeReference : ITypeReference
     {
         public string Name { get; }
+        public string Namespace { get; }
 
         public ClassTypeReference(string name, string @namespace)
         {
             Name = name;
+            Namespace = @namespace;
         }
 
         protected bool Equals(ClassTypeReference other)

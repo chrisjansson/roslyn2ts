@@ -7,15 +7,7 @@ var path = TypescriptModuleSerializer.GetImportPathBetween(Model.CurrentModule, 
 @:import { @dep.Item1.Name } from "./@path"
 }
 
-@foreach (TypeFragment tf in Model.CurrentModule.Fragments)
+@foreach (var fragment in Model.CurrentModule.Fragments)
 {
-    foreach (var type in tf.Types)
-    {
-@:export interface @type.Name {
-foreach (var property in type.Properties)
-{
-    @:@property.Name: @Model.TranslateType(property.Type);
-}
-@:}
-    }
+    await IncludeAsync(Model.GetPartial(fragment), fragment);
 }
