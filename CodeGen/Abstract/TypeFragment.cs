@@ -6,26 +6,22 @@ namespace CodeGen.Abstract
 {
     public class TypeFragment : IAbstractFragment
     {
-        public TypeFragment()
+        public TypeFragment(Class @class)
         {
-            Types = new List<Class>();
+            Type = @class;
         }
 
-        public List<Class> Types { get; }
+        public Class Type { get; }
 
         public IReadOnlyCollection<ITypeReference> GetDependencies()
         {
-            return Types
-                .SelectMany(GetDependencies)
+            return GetDependencies(Type)
                 .ToList();
         }
 
         public IReadOnlyCollection<ITypeReference> GetExports()
         {
-            return Types
-                .Select(x => x.TypeReference)
-                .Distinct()
-                .ToList();
+            return new List<ITypeReference>{ Type.TypeReference };
         }
 
         private List<ITypeReference> GetDependencies(Class @class)

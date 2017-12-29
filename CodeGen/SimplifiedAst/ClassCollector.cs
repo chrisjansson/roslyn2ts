@@ -29,7 +29,6 @@ namespace CodeGen.SimplifiedAst
             foreach (var member in namedTypeSymbol.GetMembers())
                 collector.Visit(member);
 
-
             Result.Add(new Class
             {
                 Name = namedTypeSymbol.Name,
@@ -92,8 +91,6 @@ namespace CodeGen.SimplifiedAst
                 return false;
             }
         }
-        
-        
 
         public class MemberSymbolCollector : SymbolVisitor
         {
@@ -105,6 +102,11 @@ namespace CodeGen.SimplifiedAst
                 if (symbol.DeclaredAccessibility != Accessibility.Public)
                     return;
 
+                if (symbol.Name == ".ctor")
+                {
+                    return;
+                }
+                
                 var parameters = symbol.Parameters
                     .Select(x => new Parameter
                     {

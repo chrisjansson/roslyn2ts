@@ -66,9 +66,7 @@ namespace CodeGen
                     }
                     var path = @class.Namespace.Split(".");
                     var module = new AbstractModule(@class.Name, path);
-                    var fragment = new TypeFragment();
-
-                    fragment.Types.Add(@class);
+                    var fragment = new TypeFragment(@class);
 
                     module.Fragments.Add(fragment);
                     allModules.Add(module);
@@ -117,7 +115,7 @@ namespace CodeGen
             Directory.Delete("C:\\temp\\ts", true);
             Directory.CreateDirectory("C:\\temp\\ts");
             
-            foreach (var file in files.Result)
+            foreach (var file in files)
             {
                 var folderPath = Path.Combine(new[] {"C:\\temp\\ts"}.Concat(file.Path).ToArray());
                 Directory.CreateDirectory(folderPath);
